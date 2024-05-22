@@ -49,7 +49,7 @@ class TablePage : public Page {
 
   bool MarkDelete(const RowId &rid, Txn *txn, LockManager *lock_manager, LogManager *log_manager);
 
-  bool UpdateTuple(Row &new_row, Row *old_row, Schema *schema, Txn *txn, LockManager *lock_manager,
+  int UpdateTuple(Row &new_row, Row *old_row, Schema *schema, Txn *txn, LockManager *lock_manager,
                    LogManager *log_manager);
 
   void ApplyDelete(const RowId &rid, Txn *txn, LogManager *log_manager);
@@ -113,6 +113,10 @@ class TablePage : public Page {
 
  public:
   static constexpr size_t SIZE_MAX_ROW = PAGE_SIZE - SIZE_TABLE_PAGE_HEADER - SIZE_TUPLE;
+  static constexpr int TUPLE_UPDATED = 0;
+  static constexpr int SLOT_NUM_INVALID = 1;
+  static constexpr int TUPLE_DELETED = 2;
+  static constexpr int NOT_ENOUGH_SPACE = 3;
 };
 
 #endif
