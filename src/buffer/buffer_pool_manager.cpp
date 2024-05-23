@@ -99,6 +99,7 @@ bool BufferPoolManager::DeletePage(page_id_t page_id) {
     if (page_table_.find(page_id) == page_table_.end()) return true;
     frame_id_t frame_id = page_table_[page_id];
     if (pages_[frame_id].GetPinCount() != 0) return false;
+    if (pages_[frame_id].IsDirty()) FlushPage(page_id);
     DeallocatePage(page_id);
     page_table_.erase(page_id);
     pages_[frame_id].ResetMemory();

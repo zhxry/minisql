@@ -41,10 +41,13 @@ TEST(BPlusTreeTests, SampleTest) {
   for (int i = 0; i < n; i++) {
     kv_map[keys[i]] = values[i];
   }
+  LOG(INFO) << "B+ Tree Test Prepare Data Done";
   // Insert data
   for (int i = 0; i < n; i++) {
+    // LOG(INFO) << i;
     tree.Insert(keys[i], values[i]);
   }
+  LOG(INFO) << "B+ Tree Test Insert Done";
   ASSERT_TRUE(tree.Check());
   // Print tree
   tree.PrintTree(mgr[0], table_schema);
