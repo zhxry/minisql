@@ -155,7 +155,8 @@ bool BPlusTree::InsertIntoLeaf(GenericKey *key, const RowId &value, Txn *transac
  * of key & value pairs from input page to newly created page
  */
 BPlusTreeInternalPage *BPlusTree::Split(InternalPage *node, Txn *transaction) {
-    Page *page = buffer_pool_manager_->NewPage(root_page_id_);
+    page_id_t new_page_id;
+    Page *page = buffer_pool_manager_->NewPage(new_page_id);
     if (page == nullptr) throw "out of memory";
     auto *new_internal_page = reinterpret_cast<InternalPage *>(page->GetData());
     new_internal_page->Init(page->GetPageId(), node->GetParentPageId(), processor_.GetKeySize(), internal_max_size_);
@@ -164,7 +165,8 @@ BPlusTreeInternalPage *BPlusTree::Split(InternalPage *node, Txn *transaction) {
 }
 
 BPlusTreeLeafPage *BPlusTree::Split(LeafPage *node, Txn *transaction) {
-    Page *page = buffer_pool_manager_->NewPage(root_page_id_);
+    page_id_t new_page_id;
+    Page *page = buffer_pool_manager_->NewPage(new_page_id);
     if (page == nullptr) throw "out of memory";
     auto *new_leaf_page = reinterpret_cast<LeafPage *>(page->GetData());
     new_leaf_page->Init(page->GetPageId(), node->GetParentPageId(), processor_.GetKeySize(), leaf_max_size_);
