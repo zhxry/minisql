@@ -56,14 +56,8 @@ TEST(BPlusTreeTests, SampleTest) {
   vector<RowId> ans;
   LOG(INFO) << "B+ Tree Print Done";
   for (int i = 0; i < n; i++) {
-    // LOG(INFO) << i << " " << ans[i].GetPageId();
     tree.GetValue(keys_copy[i], ans);
-    // LOG(INFO) << kv_map[keys_copy[i]].GetPageId() << " " << ans[i].GetPageId();
     ASSERT_EQ(kv_map[keys_copy[i]], ans[i]);
-    // if (i < 10) {
-      // LOG(INFO) << kv_map[keys_copy[i]].GetPageId() << " " << kv_map[keys_copy[i]].GetSlotNum();
-      // LOG(INFO) << ans[i].GetPageId() << " " << ans[i].GetSlotNum();
-    // }
   }
   LOG(INFO) << "B+ Tree Value Check Done";
   ASSERT_TRUE(tree.Check());

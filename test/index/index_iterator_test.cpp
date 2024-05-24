@@ -23,6 +23,7 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
     insert_key.emplace_back(key);
     tree.Insert(key, RowId(i * 100), nullptr);
   }
+  LOG(INFO) << "Insert done";
   // Generate delete record
   vector<GenericKey *> delete_key;
   for (int i = 2; i <= 50; i += 2) {
@@ -32,6 +33,7 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
     delete_key.emplace_back(key);
     tree.Remove(key);
   }
+  LOG(INFO) << "Delete done";
   // Search keys
   vector<RowId> v;
   vector<GenericKey *> not_delete_key;
@@ -46,6 +48,7 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
     ASSERT_TRUE(tree.GetValue(key, v));
     ASSERT_EQ(i * 100, v[v.size() - 1].Get());
   }
+  LOG(INFO) << "Search done";
   // Iterator
   int i = 0;
   for (auto iter = tree.Begin(); iter != tree.End(); ++iter) {
