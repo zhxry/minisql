@@ -19,6 +19,13 @@ BPlusTree::BPlusTree(index_id_t index_id, BufferPoolManager *buffer_pool_manager
       internal_max_size_(internal_max_size) {
     root_page_id_ = INVALID_PAGE_ID;
     UpdateRootPageId(1);
+    // Page *page = buffer_pool_manager_->FetchPage(INDEX_ROOTS_PAGE_ID);
+    // auto *index_roots_page = reinterpret_cast<IndexRootsPage *>(page->GetData());
+    // if (!index_roots_page->GetRootId(index_id_, &root_page_id_)) {
+    //     root_page_id_ = INVALID_PAGE_ID;
+    //     UpdateRootPageId(1);
+    // }
+    // buffer_pool_manager_->UnpinPage(INDEX_ROOTS_PAGE_ID, false);
     if (leaf_max_size_ == 0) {
         leaf_max_size_ = (PAGE_SIZE - LEAF_PAGE_HEADER_SIZE) / (processor_.GetKeySize() + sizeof(RowId)) - 1;
     }
@@ -65,7 +72,10 @@ bool BPlusTree::GetValue(const GenericKey *key, std::vector<RowId> &result, Txn 
     auto *leaf_page = reinterpret_cast<LeafPage *>(FindLeafPage(key, INVALID_PAGE_ID, false));
     if (IsEmpty() || leaf_page == nullptr) return false;
     RowId rid;
+    // LOG(INFO) << leaf_page->GetPageId();
+    // LOG(INFO) << "2";
     bool ret = leaf_page->Lookup(key, rid, processor_);
+    // LOG(INFO) << "3";
     if (ret) result.push_back(rid);
     buffer_pool_manager_->UnpinPage(leaf_page->GetPageId(), false);
     return ret;
@@ -83,9 +93,7 @@ bool BPlusTree::GetValue(const GenericKey *key, std::vector<RowId> &result, Txn 
  */
 bool BPlusTree::Insert(GenericKey *key, const RowId &value, Txn *transaction) {
     if (IsEmpty()) return StartNewTree(key, value), true;
-    bool ret = InsertIntoLeaf(key, value, transaction);
-    LOG(INFO) << value.GetPageId();
-    return ret;
+    return InsertIntoLeaf(key, value, transaction);
 }
 /*
  * Insert constant key & value pair into an empty tree
@@ -116,7 +124,7 @@ void BPlusTree::StartNewTree(GenericKey *key, const RowId &value) {
 bool BPlusTree::InsertIntoLeaf(GenericKey *key, const RowId &value, Txn *transaction) {
     auto *leaf_page = reinterpret_cast<LeafPage *>(FindLeafPage(key, INVALID_PAGE_ID, false));
     if (leaf_page == nullptr) return false;
-    LOG(INFO) << "leaf page id: " << leaf_page->GetPageId();
+    // LOG(INFO) << "leaf page id: " << leaf_page->GetPageId();
     RowId rid;
     if (leaf_page->Lookup(key, rid, processor_)) {
         buffer_pool_manager_->UnpinPage(leaf_page->GetPageId(), false);

@@ -135,7 +135,7 @@ void InternalPage::CopyNFrom(void *src, int size, BufferPoolManager *buffer_pool
     for (int i = 0; i < size; ++i) {
         page_id_t child_page_id = ValueAt(GetSize() - size + i);
         if (child_page_id != INVALID_PAGE_ID) {
-            auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(child_page_id));
+            auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(child_page_id)->GetData());
             child_page->SetParentPageId(GetPageId());
             buffer_pool_manager->UnpinPage(child_page_id, true);
         }
@@ -209,7 +209,7 @@ void InternalPage::CopyLastFrom(GenericKey *key, const page_id_t value, BufferPo
     SetValueAt(GetSize(), value);
     IncreaseSize(1);
     if (value != INVALID_PAGE_ID) {
-        auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(value));
+        auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(value)->GetData());
         child_page->SetParentPageId(GetPageId());
         buffer_pool_manager->UnpinPage(value, true);
     }
@@ -240,7 +240,7 @@ void InternalPage::CopyFirstFrom(const page_id_t value, BufferPoolManager *buffe
     SetValueAt(0, value);
     IncreaseSize(1);
     if (value != INVALID_PAGE_ID) {
-        auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(value));
+        auto *child_page = reinterpret_cast<InternalPage *>(buffer_pool_manager->FetchPage(value)->GetData());
         child_page->SetParentPageId(GetPageId());
         buffer_pool_manager->UnpinPage(value, true);
     }

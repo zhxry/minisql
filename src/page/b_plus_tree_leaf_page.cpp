@@ -106,7 +106,7 @@ std::pair<GenericKey *, RowId> LeafPage::GetItem(int index) { return {KeyAt(inde
  */
 int LeafPage::Insert(GenericKey *key, const RowId &value, const KeyManager &KM) {
     int index = KeyIndex(key, KM);
-    if (GetSize() > 0 && KM.CompareKeys(KeyAt(index), key) == 0) {
+    if (index < GetSize() && KM.CompareKeys(KeyAt(index), key) == 0) {
         return GetSize();
     }
     memmove(PairPtrAt(index + 1), PairPtrAt(index), (GetSize() - index) * pair_size);

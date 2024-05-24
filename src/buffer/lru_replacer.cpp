@@ -8,7 +8,7 @@ LRUReplacer::~LRUReplacer() = default;
  * TODO: Student Implement (finished)
  */
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
-    if (LRU_list.empty()) return false;
+    if (LRU_list.empty()) return frame_id = nullptr, false;
     *frame_id = LRU_list.front();
     LRU_list.pop_front();
     LRU_map.erase(*frame_id);
