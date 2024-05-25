@@ -18,7 +18,12 @@ BPlusTree::BPlusTree(index_id_t index_id, BufferPoolManager *buffer_pool_manager
       leaf_max_size_(leaf_max_size),
       internal_max_size_(internal_max_size) {
     root_page_id_ = INVALID_PAGE_ID;
-    UpdateRootPageId(1);
+    auto *index_roots_page = reinterpret_cast<IndexRootsPage *>(buffer_pool_manager_->FetchPage(INDEX_ROOTS_PAGE_ID)->GetData());
+    if (!index_roots_page->GetRootId(index_id_, &root_page_id_)) {
+        root_page_id_ = INVALID_PAGE_ID;
+        UpdateRootPageId(1);
+    }
+    buffer_pool_manager_->UnpinPage(INDEX_ROOTS_PAGE_ID, false);
     if (leaf_max_size_ == 0) {
         leaf_max_size_ = (PAGE_SIZE - LEAF_PAGE_HEADER_SIZE) / (processor_.GetKeySize() + sizeof(RowId)) - 1;
     }

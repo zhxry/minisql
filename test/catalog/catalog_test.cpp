@@ -122,6 +122,7 @@ TEST(CatalogTest, CatalogIndexTest) {
                               Field(TypeId::kTypeChar, const_cast<char *>("minisql"), 7, true)};
     Row row(fields);
     RowId rid(1000, i);
+    // LOG(INFO) << i;
     ASSERT_EQ(DB_SUCCESS, index_info_02->GetIndex()->ScanKey(row, ret_02, &txn));
     ASSERT_EQ(rid.Get(), ret_02[i].Get());
   }
