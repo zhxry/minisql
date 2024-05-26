@@ -36,13 +36,11 @@ TEST(BPlusTreeTests, BPlusTreeIndexSimpleTest) {
       throw logic_error("Failed to allocate catalog meta page.");
     }
   }
-  LOG(INFO) << "asdadsda";
   if (bpm_->IsPageFree(INDEX_ROOTS_PAGE_ID)) {
     if (bpm_->NewPage(id) == nullptr || id != INDEX_ROOTS_PAGE_ID) {
       throw logic_error("Failed to allocate header page.");
     }
   }
-  LOG(INFO) << "bbbbbbbbbbb";
   std::vector<Column *> columns = {new Column("id", TypeId::kTypeInt, 0, false, false),
                                    new Column("name", TypeId::kTypeChar, 64, 1, true, false),
                                    new Column("account", TypeId::kTypeFloat, 2, true, false)};

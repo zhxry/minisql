@@ -32,6 +32,7 @@ Column::Column(const Column *other)
 uint32_t Column::SerializeTo(char *buf) const {
     // replace with your code here
     uint32_t res = 0, len = name_.length();
+    memcpy(buf + res, &COLUMN_MAGIC_NUM, sizeof(uint32_t)), res += sizeof(uint32_t);
     memcpy(buf + res, &len, sizeof(uint32_t)), res += sizeof(uint32_t);
     memcpy(buf + res, name_.c_str(), len), res += len;
     memcpy(buf + res, &type_, sizeof(TypeId)), res += sizeof(TypeId);
@@ -47,7 +48,7 @@ uint32_t Column::SerializeTo(char *buf) const {
  */
 uint32_t Column::GetSerializedSize() const {
     // replace with your code here
-    return name_.length() + sizeof(TypeId) + 3 * sizeof(uint32_t) + 2 * sizeof(bool);
+    return name_.length() + sizeof(TypeId) + 4 * sizeof(uint32_t) + 2 * sizeof(bool);
 }
 
 /**
@@ -55,13 +56,16 @@ uint32_t Column::GetSerializedSize() const {
  */
 uint32_t Column::DeserializeFrom(char *buf, Column *&column) {
     // replace with your code here
-    uint32_t res = 0, len;
+    uint32_t res = 4, len;
     TypeId type;
     uint32_t col_len, table_ind;
     bool nullable, unique;
     if (column != nullptr) {
         LOG(WARNING) << "Pointer to column is not null in column deserialize." << std::endl;
     }
+    uint32_t magic_num = MACH_READ_UINT32(buf);
+    // LOG(INFO) << "column_magic_num: " << magic_num;
+    ASSERT(magic_num == COLUMN_MAGIC_NUM, "Failed to deserialize column.");
     memcpy(&len, buf + res, sizeof(uint32_t)), res += sizeof(uint32_t);
     std::string name(buf + res, len); res += len;
     memcpy(&type, buf + res, sizeof(TypeId)), res += sizeof(TypeId);

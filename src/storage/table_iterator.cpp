@@ -57,30 +57,30 @@ TableIterator &TableIterator::operator++() {
     page_id_t page_id = rid.GetPageId();
     if (page_id == INVALID_PAGE_ID) return this->row_->SetRowId(INVALID_ROWID), *this;
     auto page = reinterpret_cast<TablePage *>(table_heap_->buffer_pool_manager_->FetchPage(page_id));
-    assert(page != nullptr);
     page->RLatch();
     if (page->GetNextTupleRid(rid, &new_rid)) {
         page->RUnlatch();
-        table_heap_->buffer_pool_manager_->UnpinPage(page_id, false);
         this->row_->SetRowId(new_rid);
+        table_heap_->GetTuple(this->row_, nullptr);
+        table_heap_->buffer_pool_manager_->UnpinPage(page_id, false);
         return *this;
     }
     page_id_t next_page_id = page->GetNextPageId();
     while (next_page_id != INVALID_PAGE_ID) {
+        page->RUnlatch();
         page = reinterpret_cast<TablePage *>(table_heap_->buffer_pool_manager_->FetchPage(next_page_id));
-        assert(page != nullptr);
         page->RLatch();
         if (page->GetFirstTupleRid(&new_rid)) {
             page->RUnlatch();
-            table_heap_->buffer_pool_manager_->UnpinPage(next_page_id, false);
             this->row_->SetRowId(new_rid);
+            table_heap_->GetTuple(this->row_, nullptr);
+            table_heap_->buffer_pool_manager_->UnpinPage(next_page_id, false);
             return *this;
         }
-        page_id = next_page_id;
         next_page_id = page->GetNextPageId();
-        page->RUnlatch();
-        table_heap_->buffer_pool_manager_->UnpinPage(page_id, false);
+        table_heap_->buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
     }
+    page->RUnlatch();
     this->row_->SetRowId(INVALID_ROWID);
     return *this;
 }

@@ -23,8 +23,6 @@ uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
 }
 
 uint32_t Row::DeserializeFrom(char *buf, Schema *schema) {
-    ASSERT(schema != nullptr, "Invalid schema before serialize.");
-    ASSERT(fields_.empty(), "Non empty field in row.");
     uint32_t res = sizeof(uint32_t), cnt = 0;
     memcpy(&cnt, buf, sizeof(uint32_t));
     uint32_t len = (cnt + 31) / 32;
