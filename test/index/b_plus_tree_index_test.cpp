@@ -28,6 +28,7 @@ TEST(BPlusTreeTests, BPlusTreeIndexGenericKeyTest) {
 }
 
 TEST(BPlusTreeTests, BPlusTreeIndexSimpleTest) {
+  remove(db_name.c_str());
   auto disk_mgr_ = new DiskManager(db_name);
   auto bpm_ = new BufferPoolManager(DEFAULT_BUFFER_POOL_SIZE, disk_mgr_);
   page_id_t id;
@@ -73,5 +74,8 @@ TEST(BPlusTreeTests, BPlusTreeIndexSimpleTest) {
     ASSERT_EQ(i, (*iter).second.GetSlotNum());
     i++;
   }
+  index->Destroy();
   delete index;
+  delete bpm_;
+  delete disk_mgr_;
 }
