@@ -9,73 +9,73 @@
 static const std::string db_name = "bp_tree_insert_test.db";
 
 TEST(BPlusTreeTests, SampleTest) {
-  // Init engine
-  DBStorageEngine engine(db_name);
-  std::vector<Column *> columns = {
-      new Column("int", TypeId::kTypeInt, 0, false, false),
-  };
-  Schema *table_schema = new Schema(columns);
-  KeyManager KP(table_schema, 16);
-  BPlusTree tree(0, engine.bpm_, KP);
-  TreeFileManagers mgr("tree_");
-  // Prepare data
-  const int n = 2000;
-  vector<GenericKey *> keys;
-  vector<RowId> values;
-  vector<GenericKey *> delete_seq;
-  map<GenericKey *, RowId> kv_map;
-  for (int i = 0; i < n; i++) {
-    GenericKey *key = KP.InitKey();
-    std::vector<Field> fields{Field(TypeId::kTypeInt, i)};
-    KP.SerializeFromKey(key, Row(fields), table_schema);
-    keys.push_back(key);
-    values.push_back(RowId(i));
-    delete_seq.push_back(key);
-  }
-  vector<GenericKey *> keys_copy(keys);
-  // Shuffle data
-  ShuffleArray(keys);
-  ShuffleArray(values);
-  ShuffleArray(delete_seq);
-  // Map key value
-  for (int i = 0; i < n; i++) {
-    kv_map[keys[i]] = values[i];
-  }
-  LOG(INFO) << "B+ Tree Test Prepare Data Done";
-  // Insert data
-  for (int i = 0; i < n; i++) {
-    // LOG(INFO) << i;
-    tree.Insert(keys[i], values[i]);
-  }
-  LOG(INFO) << "B+ Tree Test Insert Done";
-  ASSERT_TRUE(tree.Check());
-  LOG(INFO) << "B+ Tree PinCheck_1 Done";
-  // Print tree
-  tree.PrintTree(mgr[0], table_schema);
-  // Search keys
-  vector<RowId> ans;
-  LOG(INFO) << "B+ Tree Print Done";
-  for (int i = 0; i < n; i++) {
-    tree.GetValue(keys_copy[i], ans);
-    ASSERT_EQ(kv_map[keys_copy[i]], ans[i]);
-  }
-  LOG(INFO) << "B+ Tree Value Check Done";
-  ASSERT_TRUE(tree.Check());
-  LOG(INFO) << "B+ Tree PinCheck_2 Done";
-  // Delete half keys
-  for (int i = 0; i < n / 2; i++) {
-    tree.Remove(delete_seq[i]);
-  }
-  LOG(INFO) << "B+ Tree Remove Done";
-  tree.PrintTree(mgr[1], table_schema);
-  // Check valid
-  ans.clear();
-  for (int i = 0; i < n / 2; i++) {
-    ASSERT_FALSE(tree.GetValue(delete_seq[i], ans));
-  }
-  for (int i = n / 2; i < n; i++) {
-    ASSERT_TRUE(tree.GetValue(delete_seq[i], ans));
-    ASSERT_EQ(kv_map[delete_seq[i]], ans[ans.size() - 1]);
-  }
-  ASSERT_TRUE(tree.Check());
+	// Init engine
+	DBStorageEngine engine(db_name);
+	std::vector<Column*> columns = {
+		new Column("int", TypeId::kTypeInt, 0, false, false),
+	};
+	Schema* table_schema = new Schema(columns);
+	KeyManager KP(table_schema, 16);
+	BPlusTree tree(0, engine.bpm_, KP);
+	TreeFileManagers mgr("tree_");
+	// Prepare data
+	const int n = 2000;
+	vector<GenericKey*> keys;
+	vector<RowId> values;
+	vector<GenericKey*> delete_seq;
+	map<GenericKey*, RowId> kv_map;
+	for (int i = 0; i < n; i++) {
+		GenericKey* key = KP.InitKey();
+		std::vector<Field> fields{ Field(TypeId::kTypeInt, i) };
+		KP.SerializeFromKey(key, Row(fields), table_schema);
+		keys.push_back(key);
+		values.push_back(RowId(i));
+		delete_seq.push_back(key);
+	}
+	vector<GenericKey*> keys_copy(keys);
+	// Shuffle data
+	ShuffleArray(keys);
+	ShuffleArray(values);
+	ShuffleArray(delete_seq);
+	// Map key value
+	for (int i = 0; i < n; i++) {
+		kv_map[keys[i]] = values[i];
+	}
+	LOG(INFO) << "B+ Tree Test Prepare Data Done";
+	// Insert data
+	for (int i = 0; i < n; i++) {
+		// LOG(INFO) << i;
+		tree.Insert(keys[i], values[i]);
+	}
+	LOG(INFO) << "B+ Tree Test Insert Done";
+	ASSERT_TRUE(tree.Check());
+	LOG(INFO) << "B+ Tree PinCheck_1 Done";
+	// Print tree
+	tree.PrintTree(mgr[0], table_schema);
+	// Search keys
+	vector<RowId> ans;
+	LOG(INFO) << "B+ Tree Print Done";
+	for (int i = 0; i < n; i++) {
+		tree.GetValue(keys_copy[i], ans);
+		ASSERT_EQ(kv_map[keys_copy[i]], ans[i]);
+	}
+	LOG(INFO) << "B+ Tree Value Check Done";
+	ASSERT_TRUE(tree.Check());
+	LOG(INFO) << "B+ Tree PinCheck_2 Done";
+	// Delete half keys
+	for (int i = 0; i < n / 2; i++) {
+		tree.Remove(delete_seq[i]);
+	}
+	LOG(INFO) << "B+ Tree Remove Done";
+	tree.PrintTree(mgr[1], table_schema);
+	// Check valid
+	ans.clear();
+	for (int i = 0; i < n / 2; i++) {
+		ASSERT_FALSE(tree.GetValue(delete_seq[i], ans));
+	}
+	for (int i = n / 2; i < n; i++) {
+		ASSERT_TRUE(tree.GetValue(delete_seq[i], ans));
+		ASSERT_EQ(kv_map[delete_seq[i]], ans[ans.size() - 1]);
+	}
+	ASSERT_TRUE(tree.Check());
 }
