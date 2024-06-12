@@ -262,9 +262,11 @@ dberr_t ExecuteEngine::ExecuteDropDatabase(pSyntaxNode ast, ExecuteContext *cont
     if (dbs_.find(db_name) == dbs_.end()) {
         return DB_NOT_EXIST;
     }
-    remove(db_name.c_str());
+    // remove(db_name.c_str());
+    remove(("./databases/" + db_name).c_str());
     delete dbs_[db_name];
     dbs_.erase(db_name);
+    if (db_name == current_db_) current_db_ = "";
     return DB_SUCCESS;
 }
 
@@ -538,7 +540,7 @@ dberr_t ExecuteEngine::ExecuteShowIndexes(pSyntaxNode ast, ExecuteContext *conte
         std::cout << ss.rdbuf();
 
         auto ed = std::chrono::high_resolution_clock::now();
-        std::cout << "OK, " << index_names.size() << " rows in set" << std::chrono::duration<double, std::milli>(ed - st).count() / 1000 << " sec)" << std::endl;
+        std::cout << "OK, " << index_names.size() << " rows in set (" << std::chrono::duration<double, std::milli>(ed - st).count() / 1000 << " sec)" << std::endl;
     } else {
         auto ed = std::chrono::high_resolution_clock::now();
         std::cout << "Empty set (" << std::chrono::duration<double, std::milli>(ed - st).count() / 1000 << " sec)" << std::endl;

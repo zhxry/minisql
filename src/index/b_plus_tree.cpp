@@ -34,7 +34,7 @@ BPlusTree::BPlusTree(index_id_t index_id, BufferPoolManager *buffer_pool_manager
 
 void BPlusTree::Destroy(page_id_t current_page_id) {
     if (current_page_id == INVALID_PAGE_ID) current_page_id = root_page_id_;
-    ASSERT(current_page_id != INVALID_PAGE_ID, "page_id invalid");
+    if (current_page_id == INVALID_PAGE_ID) return;
     auto *page = reinterpret_cast<BPlusTreePage *>(buffer_pool_manager_->FetchPage(current_page_id)->GetData());
     if (page->IsRootPage()) {
         root_page_id_ = INVALID_PAGE_ID;
@@ -280,8 +280,10 @@ bool BPlusTree::CoalesceOrRedistribute(N *&node, Txn *transaction) {
  */
 bool BPlusTree::Coalesce(LeafPage *&neighbor_node, LeafPage *&node, InternalPage *&parent, int index,
                          Txn *transaction) {
-    if (index == 0) {
+    if (index == 0) { // sibling = 1
         neighbor_node->MoveAllTo(node);
+        auto tmp = neighbor_node; // swap
+        neighbor_node = node, node = tmp;
         parent->Remove(1);
     } else {
         node->MoveAllTo(neighbor_node);
@@ -292,16 +294,13 @@ bool BPlusTree::Coalesce(LeafPage *&neighbor_node, LeafPage *&node, InternalPage
 
 bool BPlusTree::Coalesce(InternalPage *&neighbor_node, InternalPage *&node, InternalPage *&parent, int index,
                          Txn *transaction) {
-    if (index == 0) {
+    if (index == 0) { // sibling = 1
         neighbor_node->MoveAllTo(node, parent->KeyAt(1), buffer_pool_manager_);
-        parent->Remove(1);
-    } else {
-        node->MoveAllTo(neighbor_node, parent->KeyAt(index), buffer_pool_manager_);
-        parent->Remove(index);
     }
+    node->MoveAllTo(neighbor_node, parent->KeyAt(index), buffer_pool_manager_);
+    parent->Remove(index);
     return parent->GetSize() < parent->GetMinSize();
 }
-
 /*
  * Redistribute key & value pairs from one page to its sibling page. If index ==
  * 0, move sibling page's first key & value pair into end of input "node",
@@ -310,7 +309,6 @@ bool BPlusTree::Coalesce(InternalPage *&neighbor_node, InternalPage *&node, Inte
  * Using template N to represent either internal page or leaf page.
  * @param   neighbor_node      sibling page of input "node"
  * @param   node               input from method coalesceOrRedistribute()
- * @paran   index              0: neighbor on th right, >0: neighbor on the left
  */
 void BPlusTree::Redistribute(LeafPage *neighbor_node, LeafPage *node, int index) {
     auto *parent = reinterpret_cast<InternalPage *>(buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
@@ -327,10 +325,10 @@ void BPlusTree::Redistribute(LeafPage *neighbor_node, LeafPage *node, int index)
 void BPlusTree::Redistribute(InternalPage *neighbor_node, InternalPage *node, int index) {
     auto *parent = reinterpret_cast<InternalPage *>(buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
     if (index == 0) {
-        node->MoveFirstToEndOf(neighbor_node, parent->KeyAt(1), buffer_pool_manager_);
+        neighbor_node->MoveFirstToEndOf(node, parent->KeyAt(1), buffer_pool_manager_);
         parent->SetKeyAt(1, neighbor_node->KeyAt(0));
     } else {
-        node->MoveLastToFrontOf(neighbor_node, parent->KeyAt(index), buffer_pool_manager_);
+        neighbor_node->MoveLastToFrontOf(node, parent->KeyAt(index), buffer_pool_manager_);
         parent->SetKeyAt(index, node->KeyAt(0));
     }
     buffer_pool_manager_->UnpinPage(parent->GetPageId(), true);
