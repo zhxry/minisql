@@ -126,12 +126,17 @@ bool BufferPoolManager::DeletePage(page_id_t page_id) {
 
 /**
  * TODO: Student Implement (finished)
- * @brief: unpin the page
- * @note: This function is not thread safe
- * @note: This function should be called by the disk manager when a page is written to disk
- * @param page_id: the page id of the page to unpin
- * @param is_dirty: true if the page is dirty, false otherwise
- * @return true if the operation is successful, false otherwise
+ * @brief: Unpins a page from the buffer pool.
+ *
+ * This function unpins a page with the specified page ID from the buffer pool. 
+ * If the page is not found in the page table, or if the page's pin count is already 0, 
+ * the function returns false. Otherwise, the function decreases the pin count of the page 
+ * and updates its dirty flag if specified. If the pin count becomes 0 after decrementing, 
+ * the function notifies the replacer to unpin the corresponding frame.
+ *
+ * @param page_id The ID of the page to be unpinned.
+ * @param is_dirty A flag indicating whether the page should be marked as dirty.
+ * @return True if the page was successfully unpinned, false otherwise.
  */
 bool BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) {
 	if (page_table_.find(page_id) == page_table_.end()) return false;
