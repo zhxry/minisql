@@ -1,47 +1,47 @@
 #include "executor/executors/index_scan_executor.h"
 
 class RowidCompare {
- public:
-  bool operator()(RowId rid1, RowId rid2) { return rid1.Get() < rid2.Get(); }
+	public:
+	bool operator()(RowId rid1, RowId rid2) { return rid1.Get() < rid2.Get(); }
 };
 
-IndexScanExecutor::IndexScanExecutor(ExecuteContext *exec_ctx, const IndexScanPlanNode *plan)
-    : AbstractExecutor(exec_ctx), plan_(plan) {}
+IndexScanExecutor::IndexScanExecutor(ExecuteContext* exec_ctx, const IndexScanPlanNode* plan)
+	: AbstractExecutor(exec_ctx), plan_(plan) {}
 
 void IndexScanExecutor::Init() {
-  exec_ctx_->GetCatalog()->GetTable(plan_->GetTableName(), table_info_);
-  auto first_row = table_info_->GetTableHeap()->Begin(nullptr);
-  result_ = IndexScan(plan_->GetPredicate());
-  is_schema_same_ = SchemaEqual(table_info_->GetSchema(), plan_->OutputSchema());
+	exec_ctx_->GetCatalog()->GetTable(plan_->GetTableName(), table_info_);
+	auto first_row = table_info_->GetTableHeap()->Begin(nullptr);
+	result_ = IndexScan(plan_->GetPredicate());
+	is_schema_same_ = SchemaEqual(table_info_->GetSchema(), plan_->OutputSchema());
 }
 
-bool IndexScanExecutor::SchemaEqual(const Schema *table_schema, const Schema *output_schema) {
-  auto table_columns = table_schema->GetColumns();
-  auto output_columns = output_schema->GetColumns();
-  if (table_columns.size() != output_columns.size()) {
-    return false;
-  }
-  int col_size = table_columns.size();
-  for (int i = 0; i < col_size; i++) {
-    if ((table_columns[i]->GetName() != output_columns[i]->GetName()) ||
-        (table_columns[i]->GetType() != output_columns[i]->GetType()) ||
-        (table_columns[i]->GetLength() != output_columns[i]->GetLength())) {
-      return false;
-    }
-  }
-  return true;
+bool IndexScanExecutor::SchemaEqual(const Schema* table_schema, const Schema* output_schema) {
+	auto table_columns = table_schema->GetColumns();
+	auto output_columns = output_schema->GetColumns();
+	if (table_columns.size() != output_columns.size()) {
+		return false;
+	}
+	int col_size = table_columns.size();
+	for (int i = 0; i < col_size; i++) {
+		if ((table_columns[i]->GetName() != output_columns[i]->GetName()) ||
+			(table_columns[i]->GetType() != output_columns[i]->GetType()) ||
+			(table_columns[i]->GetLength() != output_columns[i]->GetLength())) {
+			return false;
+		}
+	}
+	return true;
 }
 
-void IndexScanExecutor::TupleTransfer(const Schema *table_schema, const Schema *output_schema, const Row *row,
-                                      Row *output_row) {
-  const auto &output_columns = output_schema->GetColumns();
-  std::vector<Field> dest_row;
-  dest_row.reserve(output_columns.size());
-  for (const auto column : output_columns) {
-    auto idx = column->GetTableInd();
-    dest_row.emplace_back(*row->GetField(idx));
-  }
-  *output_row = Row(dest_row);
+void IndexScanExecutor::TupleTransfer(const Schema* table_schema, const Schema* output_schema, const Row* row,
+	Row* output_row) {
+	const auto& output_columns = output_schema->GetColumns();
+	std::vector<Field> dest_row;
+	dest_row.reserve(output_columns.size());
+	for (const auto column : output_columns) {
+		auto idx = column->GetTableInd();
+		dest_row.emplace_back(*row->GetField(idx));
+	}
+	*output_row = Row(dest_row);
 }
 
 vector<RowId> IndexScanExecutor::IndexScan(AbstractExpressionRef predicate) {
