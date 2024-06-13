@@ -345,18 +345,16 @@ dberr_t ExecuteEngine::ExecuteShowTables(pSyntaxNode ast, ExecuteContext* contex
 
 /**
  * TODO: Student Implement
+ *
+ * @brief: the CREATE TABLE statement.
+ *
+ * This function creates a new table in the database with the specified name and column definitions.
+ * It also creates indexes for unique columns and primary keys.
+ *
+ * @param ast The abstract syntax tree representing the CREATE TABLE statement.
+ * @param context The execution context containing the current database.
+ * @return Returns DB_FAILED if the execution fails, otherwise returns DB_SUCCESS.
  */
- // dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *context) {
- // #ifdef ENABLE_EXECUTE_DEBUG
- //     LOG(INFO) << "ExecuteCreateTable" << std::endl;
- // #endif
- //     if (current_db_.empty() || context == nullptr) {
- //         std::cout << "No database selected" << std::endl;
- //         return DB_FAILED;
- //     }
- //     auto st = std::chrono::high_resolution_clock::now();
-
- // }
 dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext* context) {
 #ifdef ENABLE_EXECUTE_DEBUG
 	LOG(INFO) << "ExecuteCreateTable" << std::endl;
@@ -477,6 +475,14 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext* conte
 
 /**
  * TODO: Student Implement (finished)
+ *
+ * @brief: the DROP TABLE statement.
+ *
+ * This function drops a table from the current database. It first checks if a database is selected and if the execution context is valid. Then, it retrieves the table's index information from the catalog. If successful, it drops all the indexes associated with the table and finally drops the table itself from the catalog.
+ *
+ * @param ast The syntax node representing the DROP TABLE statement.
+ * @param context The execution context.
+ * @return Returns DB_SUCCESS if the table is dropped successfully, otherwise returns an appropriate error code.
  */
 dberr_t ExecuteEngine::ExecuteDropTable(pSyntaxNode ast, ExecuteContext* context) {
 #ifdef ENABLE_EXECUTE_DEBUG
@@ -507,6 +513,17 @@ dberr_t ExecuteEngine::ExecuteDropTable(pSyntaxNode ast, ExecuteContext* context
 
 /**
  * TODO: Student Implement (finished)
+ *
+ * @brief: the SHOW INDEXES statement.
+ *
+ * This function retrieves the index information for all tables in the currently selected database
+ * and displays it in a formatted table. If no database is selected or the execution context is
+ * null, an error message is printed.
+ *
+ * @param ast The syntax node representing the SHOW INDEXES statement.
+ * @param context The execution context.
+ * @return The result of the execution. Returns DB_FAILED if no database is selected or the context
+ *         is null. Returns DB_SUCCESS otherwise.
  */
 dberr_t ExecuteEngine::ExecuteShowIndexes(pSyntaxNode ast, ExecuteContext* context) {
 #ifdef ENABLE_EXECUTE_DEBUG
@@ -562,6 +579,14 @@ dberr_t ExecuteEngine::ExecuteShowIndexes(pSyntaxNode ast, ExecuteContext* conte
 
 /**
  * TODO: Student Implement (finished)
+ *
+ * @brief: the CREATE INDEX statement.
+ *
+ * This function creates an index on a specified table and column(s).
+ *
+ * @param ast The syntax tree node representing the CREATE INDEX statement.
+ * @param context The execution context.
+ * @return The result of the execution. Returns DB_SUCCESS if the index is created successfully, otherwise returns an error code.
  */
 dberr_t ExecuteEngine::ExecuteCreateIndex(pSyntaxNode ast, ExecuteContext* context) {
 #ifdef ENABLE_EXECUTE_DEBUG
@@ -619,6 +644,19 @@ dberr_t ExecuteEngine::ExecuteCreateIndex(pSyntaxNode ast, ExecuteContext* conte
 
 /**
  * TODO: Student Implement (finished)
+ *
+ * @brief: Executes the DROP INDEX statement.
+ *
+ * This function is responsible for executing the DROP INDEX statement in the SQL query.
+ * It logs the execution of the DROP INDEX statement if the ENABLE_EXECUTE_DEBUG macro is defined.
+ * It checks if the current database is selected and if the execution context is valid.
+ * It retrieves the index name from the syntax node and searches for the corresponding table.
+ * If the index is found, it retrieves the table name and drops the index using the catalog manager.
+ * Finally, it prints the execution time and a success message.
+ *
+ * @param ast The syntax node representing the DROP INDEX statement.
+ * @param context The execution context.
+ * @return A dberr_t value indicating the result of the execution. In this case, it returns DB_INDEX_NOT_FOUND if the index is not found, or DB_SUCCESS otherwise.
  */
 dberr_t ExecuteEngine::ExecuteDropIndex(pSyntaxNode ast, ExecuteContext* context) {
 #ifdef ENABLE_EXECUTE_DEBUG
@@ -628,6 +666,7 @@ dberr_t ExecuteEngine::ExecuteDropIndex(pSyntaxNode ast, ExecuteContext* context
 		std::cout << "No database selected" << endl;
 		return DB_FAILED;
 	}
+
 	auto st = std::chrono::high_resolution_clock::now();
 	CatalogManager* catalog = context->GetCatalog();
 	std::string index_name = ast->child_->val_;
@@ -650,9 +689,11 @@ dberr_t ExecuteEngine::ExecuteDropIndex(pSyntaxNode ast, ExecuteContext* context
 			break;
 		}
 	}
-	if (table_name.empty()) return DB_INDEX_NOT_FOUND;
+	if (table_name.empty())
+		return DB_INDEX_NOT_FOUND;
 	res = catalog->DropIndex(table_name, index_name);
-	if (res != DB_SUCCESS) return res;
+	if (res != DB_SUCCESS)
+		return res;
 
 	auto ed = std::chrono::high_resolution_clock::now();
 	std::cout << "Drop index OK (" << std::chrono::duration<double, std::milli>(ed - st).count() / 1000 << " sec)" << std::endl;
