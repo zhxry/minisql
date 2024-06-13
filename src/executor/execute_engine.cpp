@@ -33,15 +33,15 @@ ExecuteEngine::ExecuteEngine() {
     /** When you have completed all the code for
      *  the test, run it using main.cpp and uncomment
      *  this part of the code.
-     struct dirent *stdir;
-    while((stdir = readdir(dir)) != nullptr) {
-        if( strcmp( stdir->d_name , "." ) == 0 ||
-            strcmp( stdir->d_name , "..") == 0 ||
-            stdir->d_name[0] == '.')
-        continue;
-        dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
-    }
     **/
+    // struct dirent *stdir;
+    // while((stdir = readdir(dir)) != nullptr) {
+    //     if( strcmp( stdir->d_name , "." ) == 0 ||
+    //         strcmp( stdir->d_name , "..") == 0 ||
+    //         stdir->d_name[0] == '.')
+    //     continue;
+    //     dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
+    // }
     closedir(dir);
 }
 
@@ -205,6 +205,9 @@ dberr_t ExecuteEngine::Execute(pSyntaxNode ast) {
         writer.EndInformation(result_set.size(), duration_time, false);
     }
     std::cout << writer.stream_.rdbuf();
+    // todo:: use shared_ptr for schema
+    if (ast->type_ == kNodeSelect)
+        delete planner.plan_->OutputSchema();
     return DB_SUCCESS;
 }
 
@@ -341,19 +344,8 @@ dberr_t ExecuteEngine::ExecuteShowTables(pSyntaxNode ast, ExecuteContext *contex
 }
 
 /**
- * TODO: Student Implement
+ * TODO: Student Implement (finished)
  */
-// dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *context) {
-// #ifdef ENABLE_EXECUTE_DEBUG
-//     LOG(INFO) << "ExecuteCreateTable" << std::endl;
-// #endif
-//     if (current_db_.empty() || context == nullptr) {
-//         std::cout << "No database selected" << std::endl;
-//         return DB_FAILED;
-//     }
-//     auto st = std::chrono::high_resolution_clock::now();
-
-// }
 dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *context) {
 #ifdef ENABLE_EXECUTE_DEBUG
     LOG(INFO) << "ExecuteCreateTable" << std::endl;
@@ -667,14 +659,8 @@ dberr_t ExecuteEngine::ExecuteTrxRollback(pSyntaxNode ast, ExecuteContext *conte
 }
 
 /**
- * TODO: Student Implement
+ * TODO: Student Implement (finished)
  */
-// dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context) {
-// #ifdef ENABLE_EXECUTE_DEBUG
-//     LOG(INFO) << "ExecuteExecfile" << std::endl;
-// #endif
-//   return DB_FAILED;
-// }
 dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context) {
 #ifdef ENABLE_EXECUTE_DEBUG
     LOG(INFO) << "ExecuteExecfile" << std::endl;

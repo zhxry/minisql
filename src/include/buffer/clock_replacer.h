@@ -14,6 +14,8 @@
 
 using namespace std;
 
+enum clock_state { EMPTY, USED, UNUSED };
+
 /**
  * CLOCKReplacer implements the clock replacement.
  */
@@ -39,9 +41,9 @@ class CLOCKReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  size_t capacity;
-  list<frame_id_t> clock_list;               // replacer中可以被替换的数据页
-  map<frame_id_t, frame_id_t> clock_status;  // 数据页的存储状态
+  size_t capacity, size;
+  frame_id_t clock_hand;
+  vector<clock_state> clock_status;
 };
 
 #endif  // MINISQL_CLOCK_REPLACER_H
